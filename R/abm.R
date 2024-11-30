@@ -14,27 +14,27 @@
 #'   pair this distance (or rather proximity) matrix is used. Higher scores
 #'   means higher probability to be selected. If distance plays are role, but
 #'   parameter is left to `NULL` distances based on similarity of opinion and
-#'   group is being used: $w_{ij} + 1$.
+#'   group is being used: $w_\{ij\} + 1$.
 #' @family NI
-#' @param `opinions` Discrete variable; `min(opinion) = -1` and `max(opinion) =
+#' @param opinions Discrete variable; `min(opinion) = -1` and `max(opinion) =
 #'   1` with 20 steps.
-#' @param `groups` Integer {-1,1}
-#' @param `net` Matrix, the adjacency matrix representing the relations between
+#' @param groups Integer \{-1,1\}
+#' @param net Matrix, the adjacency matrix representing the relations between
 #'   agents.  Valid values are 0 and 1.
-#' @param `H` numeric [0,1], relative influence of opinion (max if H = 0) and
+#' @param H numeric $\[0,1\]$, relative influence of opinion (max if H = 0) and
 #'   group (max if H = 1)
-#' @param `selectType` numeric {1,2}, Determines how egos are sampled. See
+#' @param selectType numeric \{1,2\}, Determines how egos are sampled. See
 #'   Details.
-#' @param `prob` numeric vector, egos are sampled based on probabilities
-#' @param selectTypeAlter numeric {1,2,3,4,5,6}, Determines how alters are
+#' @param prob numeric vector, egos are sampled based on probabilities
+#' @param selectTypeAlter numeric \{1,2,3,4,5,6\}, Determines how alters are
 #'   sampled. See Details.
-#' @param `distance`  numeric matrix. Higher scores indicate that dyads are
+#' @param distance  numeric matrix. Higher scores indicate that dyads are
 #'   closer. See Details.
-#' @param `iter` Integer. Number of pushes in each simulation run.
-#' @param `keep` Logical. If `TRUE` complete chain is saved. If `FALSE` only
+#' @param iter Integer. Number of pushes in each simulation run.
+#' @param keep Logical. If `TRUE` complete chain is saved. If `FALSE` only
 #'   final result is saved.
-#' @param `seed` Integer. Allows replication run.
-#' @param `verbose` Logical. If `TRUE` returns results of each iteration on
+#' @param seed Integer. Allows replication run.
+#' @param verbose Logical. If `TRUE` returns results of each iteration on
 #'   screen.
 #'
 #' @return list of all kind of goodies.
@@ -49,6 +49,7 @@
 
 
 #' @importFrom Rdpack reprompt
+#' @importFrom stats sd
 #' @export
 ABM_NI <- function(opinions, groups, net = NULL, H = 0.5, selectType = 1, prob = NULL, selectTypeAlter = 1, distance = NULL, iter, keep = TRUE, seed = NULL, verbose = TRUE) {
   # use a seed to be able to replicate results of specific runs!
@@ -69,7 +70,7 @@ ABM_NI <- function(opinions, groups, net = NULL, H = 0.5, selectType = 1, prob =
     }
     # actual change
     ego <- selectEgo(nagents = nagents, selectType = selectType, prob = NULL) # select an ego
-    alter <- selectAlter(nagents = nagents, ego = ego, group = groups, net = net, distance = distance_n, selectTypeAlter = 1, prob = NULL)
+    alter <- selectAlter(nagents = nagents, ego = ego, net = net, distance = distance_n, selectTypeAlter = 1, prob = NULL)
     push <- opdelta(ego = ego, alter = alter, opinions = opinions_n, simweights = opweights)
     opinions_n <- opupdate(ego = ego, opinions = opinions_n, delta = push)
     # if save everything
@@ -101,7 +102,8 @@ fweights <- function(opinions, groups, H) {
 
 #' @rdname ABM_NI
 #' @export
-distances <- function(simweights) {
+distances <- function(opinions, groups, H) {
+  simweights <- fweights(opinions = opinions, groups = groups, H = H)
   distances <- simweights + 1
   diag(distances) <- 0
   return(distances)
@@ -109,6 +111,7 @@ distances <- function(simweights) {
 
 #' @rdname ABM_NI
 #' @export
+#' @param nagents integer, number of agents
 selectEgo <- function(nagents, selectType = 1, prob = NULL) {
   if (selectType == 1) {
     sample(x = 1:nagents, size = 1, prob = prob)
@@ -119,11 +122,12 @@ selectEgo <- function(nagents, selectType = 1, prob = NULL) {
 
 #'  note that when equal number of egos received pushes, the number of pushes
 #'  dealt is not equally distributed among alters with 1-5
-#'  #' @rdname ABM_NI
+#' @rdname ABM_NI
 #' @export
+#' @param nagents integer, number of agents
+#' @param ego integer, selected ego(s) to receive push
 selectAlter <- function(nagents,
                         ego,
-                        group = NULL,
                         net = NULL,
                         distance = NULL,
                         selectTypeAlter = 1,
@@ -172,12 +176,17 @@ selectAlter <- function(nagents,
 #' weight=1) ego averages its own opinion and of (mean of) alter(s)
 #' @rdname ABM_NI
 #' @export
+#' @param ego integer vector, selected ego(s) to receive push
+#' @param alter integer vector, selected alter(s) to give push
+#' @param simweights matrix, the similarity scores of the ego-alter pairs
+#' calculated by `fweights`
 opdelta <- function(ego, alter, opinions, simweights) {
   0.5 * (opinions[alter] - opinions[ego]) * simweights[ego, alter]
 }
 
 #' @rdname ABM_NI
 #' @export
+#' @param delta numeric vector, the push(es) of alter(s)
 opupdate <- function(ego, opinions, delta) {
   # function to update opinion of ego. has to be kept in range
   opinions[ego] <- opinions[ego] + mean(delta)

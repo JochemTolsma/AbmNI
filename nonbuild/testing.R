@@ -2,6 +2,7 @@
 
 ### init
 library(plotly)
+set.seed(23455)
 seeds <- sample(2345:34567, 1000, replace=FALSE) #CAUTION, DO NOT OVERWRITE IF YOU WANT TO REPLICATE RUNS
 nagents <- 10
 #opinions <- seq(-1 ,1, length.out=10)
