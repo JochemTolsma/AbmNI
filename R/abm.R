@@ -14,14 +14,14 @@
 #'   pair this distance (or rather proximity) matrix is used. Higher scores
 #'   means higher probability to be selected. If distance plays are role, but
 #'   parameter is left to `NULL` distances based on similarity of opinion and
-#'   group is being used: $w_\{ij\} + 1$.
+#'   group is being used: \eqn{w_{ij} + 1}.
 #' @family NI
 #' @param opinions Discrete variable; `min(opinion) = -1` and `max(opinion) =
 #'   1` with 20 steps.
 #' @param groups Integer \{-1,1\}
 #' @param net Matrix, the adjacency matrix representing the relations between
 #'   agents.  Valid values are 0 and 1.
-#' @param H numeric $\[0,1\]$, relative influence of opinion (max if H = 0) and
+#' @param H numeric \[0,1\], relative influence of opinion (max if H = 0) and
 #'   group (max if H = 1)
 #' @param selectType numeric \{1,2\}, Determines how egos are sampled. See
 #'   Details.
@@ -71,6 +71,7 @@ ABM_NI <- function(opinions, groups, net = NULL, H = 0.5, selectType = 1, prob =
     # actual change
     ego <- selectEgo(nagents = nagents, selectType = selectType, prob = NULL) # select an ego
     alter <- selectAlter(nagents = nagents, ego = ego, net = net, distance = distance_n, selectTypeAlter = 1, prob = NULL)
+    if (is.na(alter)) break #no saves, perhaps correct/improve later
     push <- opdelta(ego = ego, alter = alter, opinions = opinions_n, simweights = opweights)
     opinions_n <- opupdate(ego = ego, opinions = opinions_n, delta = push)
     # if save everything

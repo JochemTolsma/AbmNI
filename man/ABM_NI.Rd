@@ -52,7 +52,7 @@ opupdate(ego, opinions, delta)
 \item{net}{Matrix, the adjacency matrix representing the relations between
 agents.  Valid values are 0 and 1.}
 
-\item{H}{numeric $[0,1]$, relative influence of opinion (max if H = 0) and
+\item{H}{numeric [0,1], relative influence of opinion (max if H = 0) and
 group (max if H = 1)}
 
 \item{selectType}{numeric \{1,2\}, Determines how egos are sampled. See
@@ -106,7 +106,7 @@ connected alters (path length 1) \code{selectTypeAlter = 6}, all alters
 pair this distance (or rather proximity) matrix is used. Higher scores
 means higher probability to be selected. If distance plays are role, but
 parameter is left to \code{NULL} distances based on similarity of opinion and
-group is being used: $w_\{ij\} + 1$.
+group is being used: \eqn{w_{ij} + 1}.
 }
 \examples{
 seeds <- sample(2345:34567, 1000, replace = FALSE)

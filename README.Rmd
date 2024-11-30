@@ -1,0 +1,170 @@
+---
+output: github_document
+always_allow_html: true
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# AbmNI
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of AbmNI is to ...
+
+## Installation
+
+You can install the development version of AbmNI from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("devtools")
+devtools::install_github("JochemTolsma/AbmNI")
+```
+
+## Example
+
+This is a basic example which shows you how to solve a common problem:
+
+```{r example}
+library(AbmNI)
+library(plotly)
+
+```
+
+```{r, echo=FALSE}
+set.seed(23455)
+```
+
+### Generating some toy data
+```{r}
+seeds <- sample(2345:34567, 1000, replace=FALSE) #CAUTION, DO NOT OVERWRITE IF YOU WANT TO REPLICATE RUNS
+#opinions <- seq(-1 ,1, length.out=10)
+#opinions <- round(runif(10, min=-1, max=1), 1)
+opinions <- c( -0.1 , 1.0 , 0.4 , 0.4 ,-0.5 , 0.4 , 0.7 , 0.7 ,-0.3,  0.6)
+#groups <- rep(c(-1,1), 5 )
+groups <- c(-1,  1, -1,  1, -1,  1, -1,  1, -1,  1)
+net1 <- matrix(sample(c(0,1),100, replace=TRUE), nrow=10, ncol =10)
+diag(net1) <- 0
+```
+
+### simulations 
+Lets do 50 simulations.
+Only the opinions matter in the dissimilarity scores. Thus, H=1. 
+```{r}
+nsim <- 50
+results <- list()
+for (i in 1:nsim) {
+  #NOTE: IF MANY RUNS SET KEEP TO FALSE AND VERBOSE TO FALSE
+  results[[i]] <- ABM_NI(opinions=opinions, groups=groups, iter=1000, keep=FALSE, verbose=FALSE, seed = seeds[i], H = 1)
+}
+```
+
+### results  
+Retrieve the results. 
+First have a look at how many runs polarized. We use the sd as indicator of polarization. 
+```{r}
+df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
+table(round(df_sd,1))
+```
+So it seems we have four different type of outcomes. 
+Let us have a look at the opinions in the end: 
+
+```{r}
+df_opinions <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$opinions))
+print("consensus")
+df_opinions[round(df_sd,1) == 0, ][1,] #consensus (check if also consensus at extreme!)
+
+print("all extreme, 1 outlier extremist")
+df_opinions[round(df_sd,1) == 0.6, ][1,] 
+
+print("all extreme, 2 outlier extremist")
+df_opinions[round(df_sd,1) == 0.8, ][1,] 
+
+print("all extreme, 3 outlier extremist: polarization")
+df_opinions[round(df_sd,1) == 1, ][1,] 
+```
+### rerun specific simulations
+
+Check out run 1
+```{r}
+#thus rerun with same seed
+results <- ABM_NI(opinions=opinions, groups=groups, iter=200, verbose=FALSE, seed = seeds[1], H = 1, keep=TRUE)
+df_opinions <- do.call("rbind", lapply(results, FUN = function(x) x$opinions))
+df_opinions <- round(df_opinions, 1)
+
+#plot development
+matres <- matrix(NA, nrow=200, ncol=length(seq(-1, 1, 0.1)))
+for (i in 1:200) {
+  op <- factor(df_opinions[i,], levels = seq(-1, 1, 0.1))
+  prop <- prop.table(table(op)) #relative frequency across all possible values
+  matres[i,] <- prop
+}
+
+time <- 1:200 #check the iter argument of ABM_NI
+opinion <- seq(-1, 1, 0.1)
+
+# Create surface plot
+plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |> 
+  layout(title = 'Relative frequency of opinions',
+         scene = list(camera=list(eye = list(x=-2, y=-0.5, z=0.64))))
+
+```
+
+Check out run 2
+```{r}
+#thus rerun with same seed
+results <- ABM_NI(opinions=opinions, groups=groups, iter=200, verbose=FALSE, seed = seeds[2], H = 1, keep=TRUE)
+df_opinions <- do.call("rbind", lapply(results, FUN = function(x) x$opinions))
+df_opinions <- round(df_opinions, 1)
+
+#plot development
+matres <- matrix(NA, nrow=200, ncol=length(seq(-1, 1, 0.1)))
+for (i in 1:200) {
+  op <- factor(df_opinions[i,], levels = seq(-1, 1, 0.1))
+  prop <- prop.table(table(op)) #relative frequency across all possible values
+  matres[i,] <- prop
+}
+
+time <- 1:200 #check the iter argument of ABM_NI
+opinion <- seq(-1, 1, 0.1)
+
+# Create surface plot
+plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
+  layout(title = 'Relative frequency of opinions',
+         scene = list(camera=list(eye = list(x=-2, y=-0.5, z=0.64))),
+         legend = list(
+          xaxis = list(title = 'time')  
+         ))
+          
+
+
+
+```
+
+<!---
+What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
+
+```{r cars}
+summary(cars)
+```
+
+You'll still need to render `README.Rmd` regularly, to keep `README.md` up-to-date. `devtools::build_readme()` is handy for this.
+
+You can also embed plots, for example:
+
+```{r pressure, echo = FALSE}
+plot(pressure)
+```
+
+In that case, don't forget to commit and push the resulting figure files, so they display on GitHub and CRAN.
+
+---> 
