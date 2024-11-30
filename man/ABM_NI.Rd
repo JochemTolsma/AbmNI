@@ -95,13 +95,20 @@ Function to perform a NI ABM with several implementation
 options....
 }
 \details{
-For examples on how to use ... \code{selectType = 1}: only one ego;
+For examples on how to use ...
+\code{selectType = 1}: only one ego;
 \code{selectType = 2}: all egos put in a queue \code{probs}: sample probability for
-ego(s) \code{selectTypeAlter = 1}, 1 random alter \code{selectTypeAlter = 2}, 1
-random connected alter \code{selectTypeAlter = 3}, 1 alter, probability based on
-similarity/distance \code{selectTypeAlter = 4}, 1 connected alter (path length
-1), probability based on similarity/distance \code{selectTypeAlter = 5}, all
-connected alters (path length 1) \code{selectTypeAlter = 6}, all alters
+ego(s)
+\code{selectTypeAlter = 1}, 1 random alter
+\code{selectTypeAlter = 2}, 1
+random connected alter
+\code{selectTypeAlter = 3}, 1 alter, probability based on
+similarity/distance
+\code{selectTypeAlter = 4}, 1 connected alter (path length
+1), probability based on similarity/distance
+\code{selectTypeAlter = 5}, all
+connected alters (path length 1)
+\code{selectTypeAlter = 6}, all alters
 \code{distance}: If alters are selected based on distance between the ego-alter
 pair this distance (or rather proximity) matrix is used. Higher scores
 means higher probability to be selected. If distance plays are role, but

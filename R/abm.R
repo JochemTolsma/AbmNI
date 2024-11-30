@@ -3,13 +3,20 @@
 #' @description Function to perform a NI ABM with several implementation
 #'   options....
 #'
-#' @details For examples on how to use ... `selectType = 1`: only one ego;
-#'   `selectType = 2`: all egos put in a queue `probs`: sample probability for
-#'   ego(s) `selectTypeAlter = 1`, 1 random alter `selectTypeAlter = 2`, 1
-#'   random connected alter `selectTypeAlter = 3`, 1 alter, probability based on
-#'   similarity/distance `selectTypeAlter = 4`, 1 connected alter (path length
-#'   1), probability based on similarity/distance `selectTypeAlter = 5`, all
-#'   connected alters (path length 1) `selectTypeAlter = 6`, all alters
+#' @details For examples on how to use ...
+#' `selectType = 1`: only one ego;
+#'  `selectType = 2`: all egos put in a queue `probs`: sample probability for
+#'   ego(s)
+#'   `selectTypeAlter = 1`, 1 random alter
+#'   `selectTypeAlter = 2`, 1
+#'   random connected alter
+#'   `selectTypeAlter = 3`, 1 alter, probability based on
+#'   similarity/distance
+#'   `selectTypeAlter = 4`, 1 connected alter (path length
+#'   1), probability based on similarity/distance
+#'   `selectTypeAlter = 5`, all
+#'   connected alters (path length 1)
+#'   `selectTypeAlter = 6`, all alters
 #'   `distance`: If alters are selected based on distance between the ego-alter
 #'   pair this distance (or rather proximity) matrix is used. Higher scores
 #'   means higher probability to be selected. If distance plays are role, but
@@ -70,15 +77,17 @@ ABM_NI <- function(opinions, groups, net = NULL, H = 0.5, selectType = 1, prob =
     }
     # actual change
     ego <- selectEgo(nagents = nagents, selectType = selectType, prob = NULL) # select an ego
-    alter <- selectAlter(nagents = nagents, ego = ego, net = net, distance = distance_n, selectTypeAlter = 1, prob = NULL)
-    if (is.na(alter)) break #no saves, perhaps correct/improve later
-    push <- opdelta(ego = ego, alter = alter, opinions = opinions_n, simweights = opweights)
-    opinions_n <- opupdate(ego = ego, opinions = opinions_n, delta = push)
-    # if save everything
-    if (keep) {
-      res <- list(iter = i, ego = ego, alter = alter, opweights = opweights, distance = distance_n, opinions = opinions_n, seed = seed, sd_op = sd(opinions_n), mean_op = mean(opinions_n))
-      if (verbose) print(res)
-      results[[i]] <- res
+    for (j in 1:length(ego)) {
+      alter <- selectAlter(nagents = nagents, ego = ego[j], net = net, distance = distance_n, selectTypeAlter = 1, prob = NULL)
+      if (is.na(alter)) break #no saves, perhaps correct/improve later
+      push <- opdelta(ego = ego[j], alter = alter, opinions = opinions_n, simweights = opweights)
+      opinions_n <- opupdate(ego = ego[j], opinions = opinions_n, delta = push)
+      # if save everything
+      if (keep) {
+        res <- list(iter = i, ego = ego[j], alter = alter, opweights = opweights, distance = distance_n, opinions = opinions_n, seed = seed, sd_op = sd(opinions_n), mean_op = mean(opinions_n))
+        if (verbose) print(res)
+        results[[i]] <- res
+      }
     }
   }
   # if save only final iter

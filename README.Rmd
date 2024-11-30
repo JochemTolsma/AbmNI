@@ -138,17 +138,110 @@ time <- 1:200 #check the iter argument of ABM_NI
 opinion <- seq(-1, 1, 0.1)
 
 # Create surface plot
-plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
+p <- plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
   layout(title = 'Relative frequency of opinions',
          scene = list(camera=list(eye = list(x=-2, y=-0.5, z=0.64))),
          legend = list(
           xaxis = list(title = 'time')  
          ))
           
+#htmlwidgets::saveWidget(p, file = "image.html")
 
-
+p
 
 ```
+
+# Example 2
+
+Put egos in a queue. 
+
+Lets do 50 simulations.
+Only the opinions matter in the dissimilarity scores. Thus, H=1.
+
+```{r}
+nsim <- 50
+results <- list()
+#because we now iterate over the queue, trim down the iter. 
+for (i in 1:nsim) {
+  #NOTE: IF MANY RUNS SET KEEP TO FALSE AND VERBOSE TO FALSE
+  results[[i]] <- ABM_NI(opinions=opinions, selectType=2, groups=groups, iter=100, keep=FALSE, verbose=FALSE, seed = seeds[i], H = 1)
+}
+```
+
+### results  
+Retrieve the results. 
+First have a look at how many runs polarized. We use the sd as indicator of polarization. 
+```{r}
+df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
+table(round(df_sd,1))
+```
+random ego selection or putting in a waiting line, does not seem to matter
+
+# Example 3
+
+weights also determined by group. 
+
+```{r}
+cor.test(opinions, groups)
+```
+We see a moderate correlation between opinions and groups. thus polarization should become more likely. 
+
+```{r}
+nsim <- 50
+results <- list()
+for (i in 1:nsim) {
+  #NOTE: IF MANY RUNS SET KEEP TO FALSE AND VERBOSE TO FALSE
+  results[[i]] <- ABM_NI(opinions=opinions, groups=groups, iter=1000, keep=FALSE, verbose=FALSE, seed = seeds[i], H = 0.5)
+}
+```
+
+### results  
+```{r}
+df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
+table(round(df_sd,1))
+```
+All maximum polarization. Lets have a better look! 
+
+Do we see alignment? 
+
+```{r}
+results <- ABM_NI(opinions=opinions, groups=groups, iter=200, verbose=FALSE, seed = seeds[15], H = 0.5, keep=TRUE)
+df_opinions <- do.call("rbind", lapply(results, FUN = function(x) x$opinions))
+df_opinions <- round(df_opinions, 1)
+
+cors <- NA
+for (i in 1:200) {
+  cors[i] <- cor(groups, df_opinions[i,])
+}
+plot(1:200, cors)
+
+```
+
+
+```{r}
+
+
+#plot development
+matres <- matrix(NA, nrow=200, ncol=length(seq(-1, 1, 0.1)))
+for (i in 1:200) {
+  op <- factor(df_opinions[i,], levels = seq(-1, 1, 0.1))
+  prop <- prop.table(table(op)) #relative frequency across all possible values
+  matres[i,] <- prop
+}
+
+time <- 1:200 #check the iter argument of ABM_NI
+opinion <- seq(-1, 1, 0.1)
+
+# Create surface plot
+plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
+  layout(title = 'Relative frequency of opinions',
+         scene = list(camera=list(eye = list(x=-2, y=-0.5, z=0.64))),
+         legend = list(
+          xaxis = list(title = 'time')  
+         ))
+  
+```
+
 
 <!---
 What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
