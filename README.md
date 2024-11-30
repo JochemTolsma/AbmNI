@@ -130,12 +130,13 @@ time <- 1:200 #check the iter argument of ABM_NI
 opinion <- seq(-1, 1, 0.1)
 
 # Create surface plot
-plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |> 
+p <- plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |> 
   layout(title = 'Relative frequency of opinions',
          scene = list(camera=list(eye = list(x=-2, y=-0.5, z=0.64))))
+#naturally the interactive plot is much nicer, but does not work in README :-(
 ```
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+<img src="image1.png" width="75%" />
 
 Check out run 2
 
@@ -164,12 +165,9 @@ p <- plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
           xaxis = list(title = 'time')  
          ))
           
-#htmlwidgets::saveWidget(p, file = "image.html")
-
-p
 ```
 
-<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />
+<img src="image2.png" width="75%" />
 
 # Example 2
 
@@ -261,32 +259,9 @@ for (i in 1:200) {
 plot(1:200, cors)
 ```
 
-<img src="man/figures/README-unnamed-chunk-14-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-16-1.png" width="100%" />
 
-``` r
-
-
-#plot development
-matres <- matrix(NA, nrow=200, ncol=length(seq(-1, 1, 0.1)))
-for (i in 1:200) {
-  op <- factor(df_opinions[i,], levels = seq(-1, 1, 0.1))
-  prop <- prop.table(table(op)) #relative frequency across all possible values
-  matres[i,] <- prop
-}
-
-time <- 1:200 #check the iter argument of ABM_NI
-opinion <- seq(-1, 1, 0.1)
-
-# Create surface plot
-plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
-  layout(title = 'Relative frequency of opinions',
-         scene = list(camera=list(eye = list(x=-2, y=-0.5, z=0.64))),
-         legend = list(
-          xaxis = list(title = 'time')  
-         ))
-```
-
-<img src="man/figures/README-unnamed-chunk-15-1.png" width="100%" />
+Yup!
 
 <!---
 What is special about using `README.Rmd` instead of just `README.md`? You can include R chunks like so:
