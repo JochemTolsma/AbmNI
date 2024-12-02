@@ -136,7 +136,7 @@ p <- plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
 #naturally the interactive plot is much nicer, but does not work in README :-(
 ```
 
-<img src="./Image1.png" width="75%" />
+<img src="./Image1.png" width="100%" />
 
 Check out run 2
 
@@ -167,7 +167,7 @@ p <- plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
           
 ```
 
-<img src="Image2.png" width="75%" />
+<img src="./Image2.png" width="100%" />
 
 # Example 2
 
