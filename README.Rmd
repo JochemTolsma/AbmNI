@@ -206,7 +206,7 @@ table(round(df_sd,1))
 ```
 All maximum polarization. Lets have a better look! 
 
-Do we see alignment? 
+Do we see alignment?
 
 ```{r}
 results <- ABM_NI(opinions=opinions, groups=groups, iter=200, verbose=FALSE, seed = seeds[15], H = 0.5, keep=TRUE)
