@@ -119,8 +119,9 @@ p <- plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
 
 ```
 
+![image description or alt text](./image1.png)
 ```{r, echo=FALSE, out.width = '75%'}
-knitr::include_graphics("image1.png")
+knitr::include_graphics("./image1.png")
 ```
 
 Check out run 2
