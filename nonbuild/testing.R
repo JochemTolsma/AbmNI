@@ -24,7 +24,7 @@ nsim <- 50
 results <- list()
 for (i in 1:nsim) {
   #NOTE: IF MANY RUNS SET KEEP TO FALSE AND VERBOSE TO FALSE
-  results[[i]] <- ABM_NI(opinions=opinions, groups=groups, iter=1000, keep=FALSE, verbose=FALSE, seed = seeds[i], H = 1)
+  results[[i]] <- ABM_NI(opinions=opinions, groups=groups, discrete = FALSE, iter=1000, keep=FALSE, verbose=FALSE, seed = seeds[i], H = 1)
 }
 
 df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
@@ -83,5 +83,109 @@ opinion <- seq(-1, 1, 0.1)
 plot_ly(x = time, y = opinion, z = t(matres), type = "surface")
 
 ########standard model seems to behave as expected. some more testing necessary.
+
+#test what happens with small max opinion push
+opinions <- c( -0.1 , 1.0 , 0.4 , 0.4 ,-0.5 , 0.4 , 0.7 , 0.7 ,-0.3,  0.6)
+nsim <- 50
+results <- list()
+for (i in 1:nsim) {
+  #NOTE: IF MANY RUNS SET KEEP TO FALSE AND VERBOSE TO FALSE
+  results[[i]] <- ABM_NI(opinions=opinions, groups=groups, iter=1000, maxpush =0.1, keep=FALSE, verbose=FALSE, seed = seeds[i], H = 1)
+}
+
+df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
+table(round(df_sd,1))
+df_opinions <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$opinions))
+df_opinions[round(df_sd,1) == 0, ] #'consensus' (no consensus at extreme!)
+df_opinions[round(df_sd,1) == 0.1, ] #this one is new, not yet consensus?. A, I see, the max push is now 0.05 but then rounding again. this has to do with discrete = TRUE
+df_opinions[round(df_sd,1) == 0.6, ] # all extremes, 1 outlier extremist
+df_opinions[round(df_sd,1) == 0.8, ] # all extremes, 2 outlier extremist
+df_opinions[round(df_sd,1) == 1, ] # all extremes, 3 outlier
+#other runs demonstrate that all stuff can happen, polarization, nuanced consensus and extreme consensus.
+
+#switching discrete to FALSE again
+#test what happens with small max opinion push
+opinions <- c( -0.1 , 1.0 , 0.4 , 0.4 ,-0.5 , 0.4 , 0.7 , 0.7 ,-0.3,  0.6)
+nsim <- 50
+results <- list()
+for (i in 1:nsim) {
+  #NOTE: IF MANY RUNS SET KEEP TO FALSE AND VERBOSE TO FALSE
+  results[[i]] <- ABM_NI(opinions=opinions, groups=groups, iter=1000, maxpush =0.1, discrete = FALSE, keep=FALSE, verbose=FALSE, seed = seeds[i], H = 1)
+}
+
+df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
+table(round(df_sd,1)) #yes, as expected
+df_opinions <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$opinions))
+df_opinions[round(df_sd,1) == 0, ] #'consensus' (no consensus at extreme!)
+df_opinions[round(df_sd,1) == 0.1, ] #this one is new, not yet consensus?. A, I see, the max push is now 0.05 but then rounding again. this has to do with discrete = TRUE
+df_opinions[round(df_sd,1) == 0.6, ] # all extremes, 1 outlier extremist
+df_opinions[round(df_sd,1) == 0.8, ] # all extremes, 2 outlier extremist
+df_opinions[round(df_sd,1) == 1, ] # all extremes, 3 outlier
+
+#thus no, small opinion push has no impact.
+
+#testing what happens with noise.
+opinions <- c( -0.1 , 1.0 , 0.4 , 0.4 ,-0.5 , 0.4 , 0.7 , 0.7 ,-0.3,  0.6)
+nsim <- 50
+results <- list()
+for (i in 1:nsim) {
+  #NOTE: IF MANY RUNS SET KEEP TO FALSE AND VERBOSE TO FALSE
+  results[[i]] <- ABM_NI(opinions=opinions, groups=groups, discrete = FALSE, noise = 1, iter=1000, keep=FALSE, verbose=FALSE, seed = seeds[i], H = 1)
+}
+
+df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
+table(round(df_sd,1))
+df_opinions <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$opinions))
+df_opinions[round(df_sd,1) == 0, ] #consensus (no consensus at extreme!)
+df_opinions[round(df_sd,1) == 0.3, ] #not yet consensus
+df_opinions[round(df_sd,1) == 0.4, ]
+df_opinions[round(df_sd,1) == 0.6, ]
+df_opinions[round(df_sd,1) == 0.7, ]
+df_opinions[round(df_sd,1) == 1, ]
+#with noise polarization much less likely
+
+#testing what happens with noise.
+opinions <- c( -0.1 , 1.0 , 0.4 , 0.4 ,-0.5 , 0.4 , 0.7 , 0.7 ,-0.3,  0.6)
+nsim <- 50
+results <- list()
+for (i in 1:nsim) {
+  #NOTE: IF MANY RUNS SET KEEP TO FALSE AND VERBOSE TO FALSE
+  results[[i]] <- ABM_NI(opinions=opinions, groups=groups, discrete = FALSE, noise = .1, iter=1000, keep=FALSE, verbose=FALSE, seed = seeds[i], H = 1)
+}
+
+df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
+table(round(df_sd,1))
+df_opinions <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$opinions))
+df_opinions[round(df_sd,1) == 0, ] #consensus (no consensus at extreme!)
+df_opinions[round(df_sd,1) == 0.3, ] #not yet consensus
+df_opinions[round(df_sd,1) == 0.4, ]
+df_opinions[round(df_sd,1) == 0.6, ]
+df_opinions[round(df_sd,1) == 0.7, ]
+df_opinions[round(df_sd,1) == .8, ]
+df_opinions[round(df_sd,1) == 1, ]
+#with small noise polarization (much) less likely
+
+#okay now, a bit like RSiena
+opinions <- c( -0.1 , 1.0 , 0.4 , 0.4 ,-0.5 , 0.4 , 0.7 , 0.7 ,-0.3,  0.6)
+nsim <- 100
+results <- list()
+for (i in 1:nsim) {
+  #NOTE: IF MANY RUNS SET KEEP TO FALSE AND VERBOSE TO FALSE
+  results[[i]] <- ABM_NI(opinions=opinions, groups=groups, maxpush = .1, discrete = TRUE, noise = 1, iter=1000, keep=FALSE, verbose=FALSE, seed = seeds[i], H = 1)
+}
+
+df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
+table(round(df_sd,1))
+df_opinions <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$opinions))
+df_opinions[round(df_sd,1) == 0, ] #consensus (no consensus at extreme!)
+df_opinions[round(df_sd,1) == 0.3, ] #not yet consensus
+df_opinions[round(df_sd,1) == 0.4, ]
+df_opinions[round(df_sd,1) == 0.6, ]
+df_opinions[round(df_sd,1) == 0.7, ]
+df_opinions[round(df_sd,1) == .8, ]
+df_opinions[round(df_sd,1) == 1, ]
+#conclusion, with small opinion pushes in discrete steps and adding a (small) stochastic component model behaves more or less similar.
+
+
 
 

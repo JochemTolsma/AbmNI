@@ -23,8 +23,7 @@
 #'   parameter is left to `NULL` distances based on similarity of opinion and
 #'   group is being used: \eqn{w_{ij} + 1}.
 #' @family NI
-#' @param opinions Discrete variable; `min(opinion) = -1` and `max(opinion) =
-#'   1` with 20 steps.
+#' @param opinions numeric \[0,1\] If `discrete = TRUE` discrete variable with 20 steps.
 #' @param groups Integer \{-1,1\}
 #' @param net Matrix, the adjacency matrix representing the relations between
 #'   agents.  Valid values are 0 and 1.
@@ -37,7 +36,10 @@
 #'   sampled. See Details.
 #' @param distance  numeric matrix. Higher scores indicate that dyads are
 #'   closer. See Details.
-#' @param iter Integer. Number of pushes in each simulation run.
+#'   @param noise numeric \[0,1\]. Percentage of noise added to the opinion push. See Details
+#'   @param maxpush numeric <0,1>. Maximum opinion push. If `NULL` the maximum possible push is +/-1.
+#'   @param discrete convert continuous opinions to discrete variable with 20 steps
+#'   #' @param iter Integer. Number of pushes in each simulation run.
 #' @param keep Logical. If `TRUE` complete chain is saved. If `FALSE` only
 #'   final result is saved.
 #' @param seed Integer. Allows replication run.
@@ -58,41 +60,104 @@
 #' @importFrom Rdpack reprompt
 #' @importFrom stats sd
 #' @export
-ABM_NI <- function(opinions, groups, net = NULL, H = 0.5, selectType = 1, prob = NULL, selectTypeAlter = 1, distance = NULL, iter, keep = TRUE, seed = NULL, verbose = TRUE) {
+ABM_NI <- function(opinions,
+                   groups,
+                   net = NULL,
+                   H = 0.5,
+                   selectType = 1,
+                   prob = NULL,
+                   selectTypeAlter = 1,
+                   distance = NULL,
+                   noise = NULL,
+                   maxpush = NULL,
+                   discrete = TRUE,
+                   iter,
+                   keep = TRUE,
+                   seed = NULL,
+                   verbose = TRUE) {
   # use a seed to be able to replicate results of specific runs!
-  if (!is.null(seed)) set.seed(seed)
+  if (!is.null(seed))
+    set.seed(seed)
   # save results
   results <- list()
-  #init
+  # init
   nagents <- length(opinions)
   distance_n <- distance
   opinions_n <- opinions
-  #start sim
+  # start sim
   for (i in 1:iter) {
     # update weights
     opweights <- fweights(opinions_n, groups, H) # calculates positive/negative influence
     # update distances if necessary
-    if (is.null(distance) & (selectTypeAlter == 3 | selectTypeAlter == 4)) {
+    if (is.null(distance) &
+        (selectTypeAlter == 3 | selectTypeAlter == 4)) {
       distance_n <- distances(opweights)
     }
     # actual change
-    ego <- selectEgo(nagents = nagents, selectType = selectType, prob = NULL) # select an ego
+    ego <- selectEgo(nagents = nagents,
+                     selectType = selectType,
+                     prob = NULL) # select an ego
     for (j in 1:length(ego)) {
-      alter <- selectAlter(nagents = nagents, ego = ego[j], net = net, distance = distance_n, selectTypeAlter = 1, prob = NULL)
-      if (is.na(alter)) break #no saves, perhaps correct/improve later
-      push <- opdelta(ego = ego[j], alter = alter, opinions = opinions_n, simweights = opweights)
-      opinions_n <- opupdate(ego = ego[j], opinions = opinions_n, delta = push)
+      alter <- selectAlter(
+        nagents = nagents,
+        ego = ego[j],
+        net = net,
+        distance = distance_n,
+        selectTypeAlter = 1,
+        prob = NULL
+      )
+      if (is.na(alter))
+        break # no saves, perhaps correct/improve later
+      push <- opdelta(
+        ego = ego[j],
+        alter = alter,
+        opinions = opinions_n,
+        simweights = opweights
+      )
+      if (!is.null(noise)) {
+        push <- push + rnorm(n = 1,
+                             mean = 0,
+                             sd = noise * abs(push))
+      }
+      if (!is.null(maxpush)) {
+        push <- pmin(pmax(push, -pushmax), pushmax)
+      }
+      opinions_n <- opupdate(ego = ego[j],
+                             opinions = opinions_n,
+                             delta = push,
+                             discrete = discrete)
       # if save everything
       if (keep) {
-        res <- list(iter = i, ego = ego[j], alter = alter, opweights = opweights, distance = distance_n, opinions = opinions_n, seed = seed, sd_op = sd(opinions_n), mean_op = mean(opinions_n))
-        if (verbose) print(res)
+        res <- list(
+          iter = i,
+          ego = ego[j],
+          alter = alter,
+          opweights = opweights,
+          distance = distance_n,
+          opinions = opinions_n,
+          seed = seed,
+          sd_op = sd(opinions_n),
+          mean_op = mean(opinions_n)
+        )
+        if (verbose)
+          print(res)
         results[[i]] <- res
       }
     }
   }
   # if save only final iter
   if (!keep) {
-    results[[1]] <- list(iter = i, ego = ego, alter = alter, opweights = opweights, distance = distance_n, opinions = opinions_n, seed = seed, sd_op = sd(opinions_n), mean_op = mean(opinions_n))
+    results[[1]] <- list(
+      iter = i,
+      ego = ego,
+      alter = alter,
+      opweights = opweights,
+      distance = distance_n,
+      opinions = opinions_n,
+      seed = seed,
+      sd_op = sd(opinions_n),
+      mean_op = mean(opinions_n)
+    )
   }
   return(results)
 }
@@ -197,10 +262,13 @@ opdelta <- function(ego, alter, opinions, simweights) {
 #' @rdname ABM_NI
 #' @export
 #' @param delta numeric vector, the push(es) of alter(s)
-opupdate <- function(ego, opinions, delta) {
+opupdate <- function(ego, opinions, delta, discrete = TRUE) {
   # function to update opinion of ego. has to be kept in range
   opinions[ego] <- opinions[ego] + mean(delta)
   opinions[ego] <- min(max(opinions[ego], -1), 1)
+  if (discrete == TRUE) {
+    opinions[ego] <- round(opinions[ego] , 1)
+  }
   return(opinions)
 }
 
