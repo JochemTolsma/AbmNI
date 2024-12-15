@@ -26,7 +26,6 @@ This is a basic example which shows you how to solve a common problem:
 library(AbmNI)
 library(plotly)
 #> Loading required package: ggplot2
-#> Warning: package 'ggplot2' was built under R version 4.4.1
 #> 
 #> Attaching package: 'plotly'
 #> The following object is masked from 'package:ggplot2':
@@ -76,8 +75,8 @@ use the sd as indicator of polarization.
 df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
 table(round(df_sd,1))
 #> 
-#>   0 0.6 0.8   1 
-#>  21  19   8   2
+#>   0 0.1 0.6 0.8   1 
+#>   8   6  21  12   3
 ```
 
 So it seems we have four different type of outcomes. Let us have a look
@@ -88,14 +87,12 @@ df_opinions <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$opinion
 print("consensus")
 #> [1] "consensus"
 df_opinions[round(df_sd,1) == 0, ][1,] #consensus (check if also consensus at extreme!)
-#>  [1] 0.2031849 0.2031849 0.2031849 0.2031849 0.2031849 0.2031849 0.2031849
-#>  [8] 0.2031849 0.2031849 0.2031849
+#>  [1] 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.3 0.2 0.2
 
 print("all extreme, 1 outlier extremist")
 #> [1] "all extreme, 1 outlier extremist"
 df_opinions[round(df_sd,1) == 0.6, ][1,] 
-#>  [1]  0.9999816  0.9999709  1.0000000  0.9999844 -1.0000000  0.9999694
-#>  [7]  0.9999844  0.9999734  0.9999709  0.9999699
+#>  [1]  1  1  1  1 -1  1  1  1  1  1
 
 print("all extreme, 2 outlier extremist")
 #> [1] "all extreme, 2 outlier extremist"
@@ -136,7 +133,7 @@ p <- plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
 #naturally the interactive plot is much nicer, but does not work in README :-(
 ```
 
-<img src="./Image1.png" width="100%" />
+<img src="./inst/Image1.png" width="100%" />
 
 Check out run 2
 
@@ -167,7 +164,7 @@ p <- plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
           
 ```
 
-<img src="./Image2.png" width="100%" />
+<img src="./inst/Image2.png" width="100%" />
 
 # Example 2
 
@@ -195,8 +192,8 @@ use the sd as indicator of polarization.
 df_sd <- do.call("rbind", lapply(results, FUN = function(x) x[[1]]$sd))
 table(round(df_sd,1))
 #> 
-#>   0 0.6 0.8   1 
-#>  17  20   8   5
+#>   0 0.1 0.6 0.8   1 
+#>  10   4  17  15   4
 ```
 
 random ego selection or putting in a waiting line, does not seem to

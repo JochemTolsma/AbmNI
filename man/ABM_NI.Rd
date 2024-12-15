@@ -19,6 +19,9 @@ ABM_NI(
   prob = NULL,
   selectTypeAlter = 1,
   distance = NULL,
+  noise = NULL,
+  maxpush = NULL,
+  discrete = TRUE,
   iter,
   keep = TRUE,
   seed = NULL,
@@ -31,21 +34,14 @@ distances(opinions, groups, H)
 
 selectEgo(nagents, selectType = 1, prob = NULL)
 
-selectAlter(
-  nagents,
-  ego,
-  net = NULL,
-  distance = NULL,
-  selectTypeAlter = 1,
-  prob = NULL
-)
+selectAlter(nagents, ego, net = NULL, distance = NULL, selectTypeAlter = 1)
 
 opdelta(ego, alter, opinions, simweights)
 
-opupdate(ego, opinions, delta)
+opupdate(ego, opinions, delta, discrete = TRUE)
 }
 \arguments{
-\item{opinions}{Discrete variable; \code{min(opinion) = -1} and \code{max(opinion) = 1} with 20 steps.}
+\item{opinions}{numeric [0,1] If \code{discrete = TRUE} discrete variable with 20 steps.}
 
 \item{groups}{Integer \{-1,1\}}
 
@@ -65,6 +61,12 @@ sampled. See Details.}
 
 \item{distance}{numeric matrix. Higher scores indicate that dyads are
 closer. See Details.}
+
+\item{noise}{numeric [0,1]. Percentage of noise added to the opinion push. See Details}
+
+\item{maxpush}{numeric <0,1>. Maximum opinion push. If \code{NULL} the maximum possible push is +/-1.}
+
+\item{discrete}{convert continuous opinions to discrete variable with 20 steps}
 
 \item{iter}{Integer. Number of pushes in each simulation run.}
 

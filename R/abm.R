@@ -36,10 +36,10 @@
 #'   sampled. See Details.
 #' @param distance  numeric matrix. Higher scores indicate that dyads are
 #'   closer. See Details.
-#'   @param noise numeric \[0,1\]. Percentage of noise added to the opinion push. See Details
-#'   @param maxpush numeric <0,1>. Maximum opinion push. If `NULL` the maximum possible push is +/-1.
-#'   @param discrete convert continuous opinions to discrete variable with 20 steps
-#'   #' @param iter Integer. Number of pushes in each simulation run.
+#' @param noise numeric \[0,1\]. Percentage of noise added to the opinion push. See Details
+#' @param maxpush numeric <0,1>. Maximum opinion push. If `NULL` the maximum possible push is +/-1.
+#' @param discrete convert continuous opinions to discrete variable with 20 steps
+#' @param iter Integer. Number of pushes in each simulation run.
 #' @param keep Logical. If `TRUE` complete chain is saved. If `FALSE` only
 #'   final result is saved.
 #' @param seed Integer. Allows replication run.
@@ -59,6 +59,7 @@
 
 #' @importFrom Rdpack reprompt
 #' @importFrom stats sd
+#' @importFrom stats rnorm
 #' @export
 ABM_NI <- function(opinions,
                    groups,
@@ -96,15 +97,14 @@ ABM_NI <- function(opinions,
     # actual change
     ego <- selectEgo(nagents = nagents,
                      selectType = selectType,
-                     prob = NULL) # select an ego
+                     prob = prob) # select an ego
     for (j in 1:length(ego)) {
       alter <- selectAlter(
         nagents = nagents,
         ego = ego[j],
         net = net,
         distance = distance_n,
-        selectTypeAlter = 1,
-        prob = NULL
+        selectTypeAlter = 1
       )
       if (is.na(alter))
         break # no saves, perhaps correct/improve later
@@ -120,7 +120,7 @@ ABM_NI <- function(opinions,
                              sd = noise * abs(push))
       }
       if (!is.null(maxpush)) {
-        push <- pmin(pmax(push, -pushmax), pushmax)
+        push <- pmin(pmax(push, -maxpush), maxpush)
       }
       opinions_n <- opupdate(ego = ego[j],
                              opinions = opinions_n,
@@ -205,11 +205,15 @@ selectAlter <- function(nagents,
                         ego,
                         net = NULL,
                         distance = NULL,
-                        selectTypeAlter = 1,
-                        prob = NULL) {
+                        selectTypeAlter = 1
+                        ) {
   agents <- setdiff(1:nagents, ego)
   if (selectTypeAlter == 1) {
-    alter <- sample(x = agents, size = 1)
+    if (length(agents) == 1) { #if only one alter to choose from
+      alter <- agents } else {
+      alter <- sample(x = agents, size = 1)
+    }
+
   } else if (selectTypeAlter == 2) {
     probs <- net[ego, ] # possibly no alter, thus NA
     if (sum(probs) == 0) {

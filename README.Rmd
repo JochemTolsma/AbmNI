@@ -120,7 +120,7 @@ p <- plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
 ```
 
 ```{r, echo=FALSE, out.width = '100%'}
-knitr::include_graphics("./Image1.png")
+knitr::include_graphics("./inst/Image1.png")
 ```
 
 Check out run 2
@@ -152,7 +152,7 @@ p <- plot_ly(x = time, y = opinion, z = t(matres), type = "surface") |>
 ```
 
 ```{r, echo=FALSE, out.width = '100%'}
-knitr::include_graphics("./Image2.png")
+knitr::include_graphics("./inst/Image2.png")
 ```
 
 # Example 2
